@@ -1,6 +1,12 @@
-# spy_returns.py
-# Goal: Compute annualized return and volatility for SPY, plot cumulative return
-# Data: OpenBB (yfinance provider) — real SPY prices 2020-2024
+"""
+spy_returns.py
+-----------------
+Annualized return and volatility for daily return series.
+
+Data Source : OpenBB / yfinance
+Ticker      : configurable (default: SPY)
+Period      : configurable (default: 2020-01-01 to 2024-12-31)
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
