@@ -35,20 +35,53 @@ def compute_sharpe_ratio(
     float
         Annualized Sharpe ratio.
     """
-    assert (
-        returns.isna().sum() == 0
-    ), "Missing returns detected — clean data before computing Sharpe"
+    assert returns.isna().sum() == 0, "Missing returns detected"
     assert len(returns) > 1, "Need at least 2 observations"
 
     daily_rf = risk_free_rate / TRADING_DAYS
 
     excess_returns = returns - daily_rf
-    annualized_ex_ret = excess_returns.mean() * TRADING_DAYS
+    annualized_excess_returns = excess_returns.mean() * TRADING_DAYS
+
     annualized_vol = excess_returns.std() * np.sqrt(TRADING_DAYS)
 
-    sharpe = annualized_ex_ret / annualized_vol
+    sharpe = annualized_excess_returns / annualized_vol
 
     return sharpe
+
+
+def compute_sortino_ratio(
+    returns: pd.Series, risk_free_rate: float = RISK_FREE_RATE
+) -> float:
+    """
+    Compute the annualized Sortino ratio.
+
+    Parameters
+    ----------
+    returns : pd.Series
+        Daily simple returns (not prices).
+    risk_free_rate : float
+        Annualized risk-free rate. Defaults to module constant.
+
+    Returns
+    -------
+    float
+        Annualized Sortino ratio.
+    """
+    assert returns.isna().sum() == 0, "Missing returns detected"
+    assert len(returns) > 1, "Need at least 2 observations"
+
+    daily_rf = risk_free_rate / TRADING_DAYS
+
+    excess_returns = returns - daily_rf
+    annualized_excess_returns = excess_returns.mean() * TRADING_DAYS
+
+    downside = excess_returns.clip(upper=0)
+    downside_deviation = np.sqrt((downside**2).mean() * TRADING_DAYS)
+
+    sortino = annualized_excess_returns / downside_deviation
+
+    return sortino
 
 
 if __name__ == "__main__":
@@ -60,3 +93,6 @@ if __name__ == "__main__":
 
     sharpe = compute_sharpe_ratio(returns)
     print(f"SPY Sharpe Ratio (2020-2024): {sharpe:.4f}")
+
+    sortino = compute_sortino_ratio(returns)
+    print(f"SPY Sortino Ratio (2020-2024): {sortino:.4f}")
