@@ -11,9 +11,9 @@ Period      : configurable (default: 2020-01-01 to 2024-12-31)
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from openbb import obb
 
-TRADING_DAYS = 252  # US equity market convention
+# --- Constants ---
+TRADING_DAYS = 252
 
 
 def fetch_prices(ticker: str, start_date: str, end_date: str) -> pd.Series:
@@ -123,6 +123,8 @@ def plot_cumulative_return(
 
 
 if __name__ == "__main__":
+    from openbb import obb
+
     TICKER = "SPY"
     START = "2020-01-01"
     END = "2024-12-31"

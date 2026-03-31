@@ -10,7 +10,6 @@ Period      : configurable (default: 2020-01-01 to 2024-12-31)
 
 import numpy as np
 import pandas as pd
-from openbb import obb
 
 # --- Constants ---
 TRADING_DAYS = 252
@@ -85,6 +84,7 @@ def compute_sortino_ratio(
 
 
 if __name__ == "__main__":
+    from openbb import obb
 
     prices = obb.equity.price.historical(
         "SPY", start_date="2020-01-01", end_date="2024-12-31", provider="yfinance"
