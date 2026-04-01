@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sharpe_sortino import (
+    compute_calmar_ratio,
     compute_max_drawdown,
     compute_sharpe_ratio,
     compute_sortino_ratio,
@@ -76,3 +77,17 @@ def test_max_drawdown_no_drawdown():
     max_drawdown = compute_max_drawdown(returns)
 
     assert max_drawdown == pytest.approx(expected, abs=1e-4)
+
+
+def test_calmar_ratio_known_output():
+    """
+    Calmar ratio matches hand-calculated value on a two-element series.
+    """
+    returns = pd.Series([0.001] * 251 + [-0.10])
+    annualized_return = (1 + returns).prod() ** (252 / len(returns)) - 1
+    max_drawdown = -0.10
+    expected = annualized_return / abs(max_drawdown)
+
+    calmar_ratio = compute_calmar_ratio(returns)
+
+    assert calmar_ratio == pytest.approx(expected, abs=1e-4)

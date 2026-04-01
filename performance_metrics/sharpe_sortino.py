@@ -34,6 +34,7 @@ def compute_sharpe_ratio(
     float
         Annualized Sharpe ratio.
     """
+    assert isinstance(returns, pd.Series), "returns must be a pd.Series"
     assert returns.isna().sum() == 0, "Missing returns detected"
     assert len(returns) > 1, "Need at least 2 observations"
 
@@ -67,6 +68,7 @@ def compute_sortino_ratio(
     float
         Annualized Sortino ratio.
     """
+    assert isinstance(returns, pd.Series), "returns must be a pd.Series"
     assert returns.isna().sum() == 0, "Missing returns detected"
     assert len(returns) > 1, "Need at least 2 observations"
 
@@ -90,7 +92,7 @@ def compute_max_drawdown(returns: pd.Series) -> float:
     Parameters
     ----------
     returns : pd.Series
-        Periodic (e.g., daily) simple returns. Must contain no NaN values.
+        Daily simple returns (not prices).
 
     Returns
     -------
@@ -98,9 +100,9 @@ def compute_max_drawdown(returns: pd.Series) -> float:
         Maximum drawdown as a decimal (always <= 0).
         Example: -0.34 means a 34% peak-to-trough decline.
     """
-    assert isinstance(returns, pd.Series), "Returns must be a pd.Series"
-    assert returns.isna().sum() == 0, "Returns contain NaN values"
-    assert len(returns) > 0, "Returns are empty"
+    assert isinstance(returns, pd.Series), "returns must be a pd.Series"
+    assert returns.isna().sum() == 0, "Missing returns detected"
+    assert len(returns) > 1, "Need at least 2 observations"
 
     cumulative_returns = (1 + returns).cumprod()
     running_peak = cumulative_returns.expanding().max()
@@ -109,6 +111,31 @@ def compute_max_drawdown(returns: pd.Series) -> float:
 
     assert max_drawdown <= 0, "max_drawdown must be <= 0"
     return max_drawdown
+
+
+def compute_calmar_ratio(returns: pd.Series) -> float:
+    """
+    Compute the Calmar ratio of a return series.
+
+    Parameters
+    ----------
+    returns : pd.Series
+        Daily simple returns (not prices).
+
+    Returns
+    -------
+    float
+        Calmar ratio.
+    """
+    assert isinstance(returns, pd.Series), "returns must be a pd.Series"
+    assert returns.isna().sum() == 0, "Missing returns detected"
+    assert len(returns) > 1, "Need at least 2 observations"
+
+    annualized_return = (1 + returns).prod() ** (252 / len(returns)) - 1
+    max_drawdown = compute_max_drawdown(returns)
+    calmar_ratio = annualized_return / abs(max_drawdown)
+
+    return calmar_ratio
 
 
 if __name__ == "__main__":
@@ -127,3 +154,6 @@ if __name__ == "__main__":
 
     max_drawdown = compute_max_drawdown(returns)
     print(f"SPY Max Drawdown (2020-2024): {max_drawdown:.4f}")
+
+    calmar_ratio = compute_calmar_ratio(returns)
+    print(f"SPY Calmar Ratio (2020-2024): {calmar_ratio:.4f}")
