@@ -7,7 +7,21 @@ PyTest suite for sharpe_sortino.py.
 import numpy as np
 import pandas as pd
 import pytest
-from sharpe_sortino import compute_sharpe_ratio, compute_sortino_ratio
+from sharpe_sortino import (
+    compute_max_drawdown,
+    compute_sharpe_ratio,
+    compute_sortino_ratio,
+)
+
+
+def test_sharpe_raises_on_nan():
+    """
+    compute_sharpe_ratio raises AssertionError when returns contain NaN.
+    """
+    returns = pd.Series([0.01, np.nan, -0.01])
+
+    with pytest.raises(AssertionError):
+        compute_sharpe_ratio(returns)
 
 
 def test_sharpe_known_output():
@@ -40,11 +54,25 @@ def test_sortino_known_output():
     assert sortino == pytest.approx(expected, abs=1e-4)
 
 
-def test_sharpe_raises_on_nan():
+def test_max_drawdown_basic():
     """
-    compute_sharpe_ratio raises AssertionError when returns contain NaN.
+    Max drawdown matches hand-calculated value on basic return series.
     """
-    returns = pd.Series([0.01, np.nan, -0.01])
+    returns = pd.Series([0.10, -0.20])
+    expected = -0.20
 
-    with pytest.raises(AssertionError):
-        compute_sharpe_ratio(returns)
+    max_drawdown = compute_max_drawdown(returns)
+
+    assert max_drawdown == pytest.approx(expected, abs=1e-4)
+
+
+def test_max_drawdown_no_drawdown():
+    """
+    Max drawdown matches hand-calculated value on monotonically rising series.
+    """
+    returns = pd.Series([0.05, 0.05, 0.05])
+    expected = 0.0
+
+    max_drawdown = compute_max_drawdown(returns)
+
+    assert max_drawdown == pytest.approx(expected, abs=1e-4)

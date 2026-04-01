@@ -83,6 +83,34 @@ def compute_sortino_ratio(
     return sortino
 
 
+def compute_max_drawdown(returns: pd.Series) -> float:
+    """
+    Compute the maximum drawdown of a return series.
+
+    Parameters
+    ----------
+    returns : pd.Series
+        Periodic (e.g., daily) simple returns. Must contain no NaN values.
+
+    Returns
+    -------
+    float
+        Maximum drawdown as a decimal (always <= 0).
+        Example: -0.34 means a 34% peak-to-trough decline.
+    """
+    assert isinstance(returns, pd.Series), "Returns must be a pd.Series"
+    assert returns.isna().sum() == 0, "Returns contain NaN values"
+    assert len(returns) > 0, "Returns are empty"
+
+    cumulative_returns = (1 + returns).cumprod()
+    running_peak = cumulative_returns.expanding().max()
+    drawdowns = (cumulative_returns - running_peak) / running_peak
+    max_drawdown = drawdowns.min()
+
+    assert max_drawdown <= 0, "max_drawdown must be <= 0"
+    return max_drawdown
+
+
 if __name__ == "__main__":
     from openbb import obb
 
@@ -96,3 +124,6 @@ if __name__ == "__main__":
 
     sortino = compute_sortino_ratio(returns)
     print(f"SPY Sortino Ratio (2020-2024): {sortino:.4f}")
+
+    max_drawdown = compute_max_drawdown(returns)
+    print(f"SPY Max Drawdown (2020-2024): {max_drawdown:.4f}")
